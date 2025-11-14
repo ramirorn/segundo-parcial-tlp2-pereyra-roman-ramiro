@@ -1,10 +1,60 @@
-import { Link } from "react-router";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useForm } from "../hooks/useForm.js";
 
 export const RegisterPage = () => {
   // TODO: Integrar lógica de registro aquí
   // TODO: Implementar useForm para el manejo del formulario
   // TODO: Implementar función handleSubmit
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { formState, handleChange, handleReset } = useForm({
+    username: "",
+    email: "",
+    pasword: "",
+    name: "",
+    lastname: "",
+  });
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (
+      !formState.username.trim() ||
+      !formState.email.trim() ||
+      !formState.password.trim() ||
+      !formState.name.trim() ||
+      !formState.lastname.trim()
+    ) {
+      setError("Todos los campos son requeridos");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:3000/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(formState),
+      });
+      const data = await response.json();
+      // console.log
+      if (response.ok) {
+        handleReset();
+        navigate("/login");
+      } else {
+        setError(data.message || "Error al registrar usuario");
+      }
+    } catch (err) {
+      console.log(err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
       <div className="max-w-lg w-full bg-white rounded-lg shadow-xl p-8">
@@ -13,13 +63,18 @@ export const RegisterPage = () => {
         </h2>
 
         {/* TODO: Mostrar este div cuando haya error */}
+        {error && (
+          <div className="mb-4 text-sm text-red-400 bg-red-950/30 border border-red-800 p-3 rounded">
+            {error}
+          </div>
+        )}
         <div className="hidden bg-red-100 text-red-700 p-3 rounded mb-4">
           <p className="text-sm">
             Error al crear la cuenta. Intenta nuevamente.
           </p>
         </div>
 
-        <form onSubmit={(event) => {}}>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label
               htmlFor="username"
@@ -32,6 +87,8 @@ export const RegisterPage = () => {
               id="username"
               name="username"
               placeholder="Elige un nombre de usuario"
+              value={formState.username}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
@@ -49,6 +106,8 @@ export const RegisterPage = () => {
               id="email"
               name="email"
               placeholder="tu@email.com"
+              value={formState.email}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
@@ -66,6 +125,8 @@ export const RegisterPage = () => {
               id="password"
               name="password"
               placeholder="Crea una contraseña segura"
+              value={formState.password}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
@@ -83,6 +144,8 @@ export const RegisterPage = () => {
               id="name"
               name="name"
               placeholder="Tu nombre"
+              value={formState.name}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
@@ -100,6 +163,8 @@ export const RegisterPage = () => {
               id="lastname"
               name="lastname"
               placeholder="Tu apellido"
+              value={formState.lastname}
+              onChange={handleChange}
               className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
               required
             />
@@ -107,6 +172,7 @@ export const RegisterPage = () => {
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded transition-colors"
           >
             Registrarse

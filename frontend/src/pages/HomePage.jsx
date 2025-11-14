@@ -18,7 +18,6 @@ export const HomePage = () => {
         credentials: "include",
       });
       const dataProfile = await profileResponse.json();
-      console.log(dataProfile);
       if (dataProfile) {
         setProfile(data.name);
       }
